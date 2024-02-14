@@ -67,9 +67,9 @@ services:
     volumes:
       - ./.data/minio:/data
     healthcheck:
-      test: timeout 20s bash -c ':> /dev/tcp/127.0.0.1/9000' || exit 1
-      interval: 15s
-      timeout: 20s
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
       retries: 5
     networks:
       - loki
