@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
 import { createRedisAdapter, createRedisClient, Server, Socket } from "https://deno.land/x/socket_io@0.2.0/mod.ts";
 
 type CreateHostRespone = {
@@ -131,6 +130,4 @@ io.on("connection", (socket: Socket) => {
     });
 });
 
-await serve(io.handler(), {
-    port: 3000,
-});
+await Deno.serve({ port: 3000, }, io.handler());
