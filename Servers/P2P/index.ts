@@ -1,6 +1,6 @@
-import { createRedisAdapter, createRedisClient, Server, Socket } from "https://deno.land/x/socket_io@0.2.0/mod.ts";
+import { Server, Socket } from "https://deno.land/x/socket_io@0.2.0/mod.ts";
 
-type CreateHostRespone = {
+type CreateHostResponse = {
     status: number;
     message: string;
 };
@@ -20,8 +20,6 @@ type Message = {
     to: string;
 };
 
-const redisHost = "signaling-redis";
-
 const isLogging = Deno.env.get("SIGNALING_LOGGING")?.toLowerCase() === "on";
 const logOn = (event: string, socket: Socket) => {
     if (isLogging) {
@@ -36,20 +34,11 @@ const log = (logMessage: () => string | object) => {
 
 const corsConfig = {
     origin: Deno.env.get("SIGNALING_CORS_ORIGIN"),
+    credentials: Deno.env.get("SIGNALING_CORS_CREDENTIALS") === "true",
 };
-
-const [pubClient, subClient] = await Promise.all([
-    createRedisClient({
-        hostname: redisHost,
-    }),
-    createRedisClient({
-        hostname: redisHost,
-    }),
-]);
 
 const io = new Server({
     cors: corsConfig,
-    adapter: createRedisAdapter(pubClient, subClient),
 });
 
 const adapter = io.of("/").adapter;
@@ -71,10 +60,10 @@ io.on("connection", (socket: Socket) => {
     // @ts-ignore To store additional information in the socket
     const getHost = (): string => socket.host;
 
-    socket.on("create host", (host: string, callback: (response: CreateHostRespone) => void) => {
+    socket.on("create host", (host: string, callback: (response: CreateHostResponse) => void) => {
         logOn("create host", socket);
 
-        const wrapper = (response: CreateHostRespone) => {
+        const wrapper = (response: CreateHostResponse) => {
             log(() => response);
             callback(response);
         };
